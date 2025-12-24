@@ -80,7 +80,8 @@
                             <span id="current-model-text" class="text-xs font-bold font-mono text-gray-700 dark:text-gray-300">nano-banana-2-4K</span>
                         </div>
                     </div>
-                    </div>
+
+                </div>
 
                 <div class="space-y-2">
                     <div class="flex justify-between items-center">
@@ -258,10 +259,8 @@
         let scale = 1, panning = false, pointX = 0, pointY = 0, startX = 0, startY = 0;
         let originalRefImage = null; 
         
-        // === 新增：历史记录数据存储 ===
         let historyData = [];
 
-        // === 升级版涂鸦引擎变量 ===
         const FIXED_PROMPT = "按照图片上的标记对图片进行修改，修改完成后将标记去掉，包括文字和画线";
         let isDrawing = false;
         let ctx = null;
@@ -290,12 +289,10 @@
             });
             renderSlots();
             
-            // === 读取历史记录 ===
             const savedHistory = localStorage.getItem('nano_history_data');
             if (savedHistory) {
                 try {
                     historyData = JSON.parse(savedHistory);
-                    // 倒序渲染
                     for (let i = historyData.length - 1; i >= 0; i--) {
                         renderHistoryItem(historyData[i].url, historyData[i].prompt, historyData[i].duration);
                     }
@@ -303,14 +300,11 @@
             }
         });
 
-        // ============ 本地存储逻辑 ============
         function saveHistoryToLocal() {
-            // 限制保存50条
             if (historyData.length > 50) historyData = historyData.slice(0, 50);
             localStorage.setItem('nano_history_data', JSON.stringify(historyData));
         }
 
-        // ============ 重绘引擎 ============
         function redrawCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             if(baseImage) { ctx.drawImage(baseImage, 0, 0, canvas.width, canvas.height); }
@@ -460,22 +454,17 @@
         function unlockPrompt() { manualUnlock = true; updatePromptLockState(); }
 
         function toggleModelDropdown(event) {
-            // 已移除下拉功能，此函数保留防止报错，但不再执行逻辑
-            if(event) event.stopPropagation();
+            // 功能已移除，保留函数以防JS报错
         }
         function selectModel(val, text) {
             document.getElementById('model-input').value = val;
             document.getElementById('current-model-text').innerText = text;
             const sizeSelect = document.getElementById('size-select');
-            
-            // === 修改点：移除对 nano-banana-hd 的判断，始终允许选择分辨率 ===
             sizeSelect.disabled = false;
-            
-            // 下拉菜单逻辑已移除，此处仅更新值
             renderSlots(); updatePromptLockState();
         }
         function closeDropdownOnClickOutside(event) {
-            // 已移除下拉菜单逻辑
+            // 功能已移除
         }
         function toggleTheme() {
             const html = document.documentElement;
@@ -533,15 +522,7 @@
         zoomContainer.addEventListener('dblclick', resetZoom);
         function setBatchSize(num) { batchSize = num; document.querySelectorAll('.batch-btn').forEach(btn => { if(parseInt(btn.dataset.val) === num) btn.className = "batch-btn active-btn flex-1 py-2 text-xs rounded transition"; else btn.className = "batch-btn inactive-btn bg-gray-100 border-gray-300 text-gray-500 dark:bg-[#18181b] dark:border-[#27272a] dark:text-gray-400 flex-1 py-2 text-xs rounded transition"; }); }
 
-        // === 辅助函数：将文件转换为 Base64 字符串 ===
-        const fileToBase64 = (file) => new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = error => reject(error);
-        });
-
-        // === 核心逻辑修改：使用 JSON 请求 ===
+        // === 提交任务核心函数 (已修复 500 错误) ===
         async function submitTask() {
             const apiKey = localStorage.getItem('nano_api_key');
             if (!apiKey) { openSettings(); return; }
@@ -559,59 +540,49 @@
             icon.classList.remove('hidden'); 
             btn.querySelector('span').innerText = "生成中...";
 
-            // 1. 处理图片：转换为 Base64
+            // 1. 准备图片
             const validImages = imageSlots.filter(item => item !== null); 
             originalRefImage = null;
-            let base64Images = [];
-
             if (validImages.length > 0) {
-                try {
-                    // 读取第一张图作为本地预览对比图
-                    const reader = new FileReader(); 
-                    reader.onload = (e) => { originalRefImage = e.target.result; }; 
-                    reader.readAsDataURL(validImages[0]);
-                    // 转换所有图片为 Base64
-                    base64Images = await Promise.all(validImages.map(fileToBase64));
-                } catch (e) {
-                    alert("图片处理失败");
-                    btn.disabled = false; return;
-                }
+                // 仅读取第一张用于本地对比显示
+                const reader = new FileReader();
+                reader.onload = (e) => { originalRefImage = e.target.result; };
+                reader.readAsDataURL(validImages[0]);
             }
 
             const startTime = Date.now();
 
-            // 2. 构建 JSON Payload
-            const payload = {
-                model: modelName,
-                prompt: prompt,
-                aspect_ratio: ratio,
-                image_size: size,
-                n: batchSize,
-                response_format: 'url'
-            };
-
-            // 如果有图片，添加到 payload (字段名为 image, 类型为 array[string])
-            if (base64Images.length > 0) {
-                payload.image = base64Images; 
-            }
-
             try {
-                // 3. 发送 JSON 请求
+                // 2. 使用 FormData 上传 (解决服务器 500 错误的关键)
+                const formData = new FormData();
+                formData.append('model', modelName);
+                formData.append('prompt', prompt);
+                formData.append('aspect_ratio', ratio);
+                formData.append('image_size', size);
+                formData.append('n', batchSize);
+                formData.append('response_format', 'url');
+
+                // 添加图片文件
+                if (validImages.length > 0) {
+                    validImages.forEach(file => {
+                        formData.append('image', file); 
+                    });
+                }
+
+                // 3. 发送请求 (fetch 会自动设置 Content-Type)
                 const response = await fetch(API_URL, { 
                     method: 'POST', 
                     headers: { 
-                        'Authorization': `Bearer ${apiKey}`,
-                        'Content-Type': 'application/json' // 必须指定 JSON 类型
+                        'Authorization': `Bearer ${apiKey}`
                     }, 
-                    body: JSON.stringify(payload) 
+                    body: formData 
                 });
 
                 const data = await response.json(); 
                 const duration = ((Date.now() - startTime) / 1000).toFixed(1) + 's';
                 
-                if (!response.ok) throw new Error(data.error?.message || "请求失败");
+                if (!response.ok) throw new Error(data.error?.message || `请求失败 (${response.status})`);
                 
-                // 兼容返回格式：可能是 { data: [...] } 或 { url: "..." }
                 const results = data.data || (data.url ? [{url: data.url}] : []);
                 
                 if (results.length > 0) { 
@@ -641,16 +612,12 @@
         }
         function clearMainPreview() { currentMainImageUrl = ""; imgWrapper.classList.add('hidden'); document.getElementById('empty-placeholder').classList.remove('hidden'); document.getElementById('time-badge').classList.add('hidden'); document.getElementById('compare-hint').classList.add('hidden'); }
         
-        // === 核心：添加历史记录与存储 ===
         function addToHistory(url, prompt, duration) {
-            // 1. 保存数据
             historyData.unshift({ url: url, prompt: prompt, duration: duration });
             saveHistoryToLocal();
-            // 2. 渲染界面
             renderHistoryItem(url, prompt, duration);
         }
 
-        // === 核心：渲染单个历史项 ===
         function renderHistoryItem(url, prompt, duration) {
             const list = document.getElementById('history-list');
             const empty = document.getElementById('history-empty'); if (empty) empty.remove();
@@ -658,7 +625,6 @@
             item.className = "history-item group relative flex-shrink-0 aspect-[4/3] h-full w-auto bg-gray-900 rounded-xl overflow-hidden border border-gray-700 cursor-pointer hover:border-purple-500 transition shadow-lg";
             item.dataset.url = url; item.dataset.prompt = encodeURIComponent(prompt); item.dataset.duration = duration;
             item.onclick = (e) => { if(!e.target.closest('.task-checkbox') && !e.target.closest('button')) { const decPrompt = decodeURIComponent(item.dataset.prompt); setMainImage(url, duration); document.getElementById('prompt-input').value = decPrompt; } };
-            // 修改：缩小了图标 w-6 h-6，增加了间距 gap-3
             item.innerHTML = `
                 <img src="${url}" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition duration-300 pointer-events-none">
                 <div class="absolute top-0 left-0 right-0 h-12 bg-gradient-to-b from-black/60 to-transparent pointer-events-none"></div>
@@ -691,7 +657,6 @@
             const batchActions = document.getElementById('batch-actions'); 
             const titleLabel = document.getElementById('task-list-title');
 
-            // === 修改：更新文字显示选中数量 ===
             if(checked.length > 0) {
                 batchActions.classList.remove('hidden');
                 titleLabel.innerHTML = `已选 <span class="text-purple-500">${checked.length}</span> 项`;
@@ -719,7 +684,6 @@
             if(!confirm(`确认删除选中的 ${checked.length} 张任务吗？`)) return;
             checked.forEach(cb => {
                 const item = cb.closest('.history-item');
-                // 同步删除数据
                 const urlToRemove = item.dataset.url;
                 historyData = historyData.filter(d => d.url !== urlToRemove);
                 item.remove();
@@ -736,7 +700,6 @@
         function deleteHistoryItem(btn) { 
             const item = btn.closest('.history-item');
             if(item) { 
-                // 同步删除数据
                 const urlToRemove = item.dataset.url;
                 historyData = historyData.filter(d => d.url !== urlToRemove);
                 saveHistoryToLocal();
