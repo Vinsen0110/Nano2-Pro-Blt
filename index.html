@@ -53,17 +53,19 @@
         /* Mobile specific styles */
         @media (max-width: 768px) {
             .mobile-hidden { display: none !important; }
-            .mobile-flex { display: flex !important; }
-            .mobile-block { display: block !important; }
-            #left-panel, #right-panel, #task-panel, #preview-area {
-                width: 100% !important;
-                height: 100% !important;
-                max-width: none !important;
-                border: none !important;
+            .mobile-view { 
+                position: absolute; 
+                top: 0; left: 0; 
+                width: 100% !important; 
+                height: 100% !important; 
+                z-index: 10;
+                background-color: inherit;
+                padding-bottom: 64px; /* Footer space */
             }
-            #main-container { flex-direction: column; }
+            #main-container { position: relative; display: block; }
             /* Hide resizers on mobile */
             .resizer-x, .resizer-y { display: none; }
+            #preview-section-wrapper.mobile-view { display: flex !important; flex-direction: column; }
         }
     </style>
 </head>
@@ -89,9 +91,9 @@
         </div>
     </header>
 
-    <div class="flex flex-1 overflow-hidden relative" id="main-container">
+    <div class="flex-1 overflow-hidden" id="main-container">
         
-        <aside id="left-panel" class="w-[360px] min-w-[280px] max-w-[600px] bg-white border-r border-gray-200 dark:bg-[#0c0c0e] dark:border-[#27272a] flex flex-col overflow-y-auto z-10 transition-colors md:block pb-20 md:pb-0" data-tab="settings">
+        <aside id="left-panel" class="w-[360px] min-w-[280px] max-w-[600px] bg-white border-r border-gray-200 dark:bg-[#0c0c0e] dark:border-[#27272a] flex flex-col overflow-y-auto z-10 transition-colors md:block pb-20 md:pb-0 h-full md:h-auto" data-tab="settings">
             <div class="p-5 space-y-3">
                 <div class="flex items-center justify-between relative z-50">
                     <div class="flex items-center gap-2 text-purple-500 font-bold text-sm uppercase tracking-wider">
@@ -184,65 +186,62 @@
 
         <div id="resizer-sidebar" class="resizer-x bg-gray-200 dark:bg-[#1f1f22]"></div>
 
-        <main class="flex-1 flex flex-col min-w-0 bg-gray-100 dark:bg-black transition-colors" id="right-panel">
-            
-            <div id="preview-section-wrapper" class="flex flex-col flex-1 overflow-hidden h-full w-full hidden md:flex" data-tab="preview">
-                 <div class="h-12 border-b border-gray-200 dark:border-[#27272a] bg-white dark:bg-[#0c0c0e] flex items-center justify-between px-4 shrink-0 z-20 transition-colors">
-                    <button onclick="importCurrentImage()" class="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white flex items-center gap-2 transition" title="将当前图作为参考图">
-                        <i class="fa-solid fa-arrow-left"></i> <span class="hidden md:inline">导入</span>
-                    </button>
-                    <div class="flex items-center gap-4">
-                        <button onclick="downloadCurrentImage()" class="text-xs text-gray-500 dark:text-gray-400 hover:text-purple-500 dark:hover:text-purple-500 flex items-center gap-2 transition">下载 JPG <i class="fa-solid fa-download"></i></button>
-                    </div>
+        <div id="preview-section-wrapper" class="hidden md:flex flex-col flex-1 overflow-hidden h-full w-full bg-gray-100 dark:bg-black transition-colors" data-tab="preview">
+             <div class="h-12 border-b border-gray-200 dark:border-[#27272a] bg-white dark:bg-[#0c0c0e] flex items-center justify-between px-4 shrink-0 z-20 transition-colors">
+                <button onclick="importCurrentImage()" class="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white flex items-center gap-2 transition" title="将当前图作为参考图">
+                    <i class="fa-solid fa-arrow-left"></i> <span class="hidden md:inline">导入</span>
+                </button>
+                <div class="flex items-center gap-4">
+                    <button onclick="downloadCurrentImage()" class="text-xs text-gray-500 dark:text-gray-400 hover:text-purple-500 dark:hover:text-purple-500 flex items-center gap-2 transition">下载 JPG <i class="fa-solid fa-download"></i></button>
                 </div>
+            </div>
 
-                <div class="flex-1 relative flex flex-col overflow-hidden select-none bg-gray-200 dark:bg-black transition-colors" id="preview-area">
-                    <div class="absolute top-4 left-4 z-30 flex items-center gap-4 bg-white/80 dark:bg-[#18181b]/80 backdrop-blur rounded-lg px-3 py-1.5 border border-gray-200 dark:border-[#27272a] shadow-sm">
-                        <span class="text-xs font-bold text-gray-800 dark:text-white">Preview</span>
-                        <div class="w-[1px] h-3 bg-gray-300 dark:bg-gray-600"></div>
-                        <span class="text-[10px] text-gray-500 dark:text-gray-400">滚轮缩放 / 拖拽 / 双击复位</span>
-                        <div class="w-[1px] h-3 bg-gray-300 dark:bg-gray-600"></div>
-                        <button onclick="clearMainPreview()" class="text-gray-400 hover:text-red-500 text-xs"><i class="fa-solid fa-trash"></i></button>
+            <div class="flex-1 relative flex flex-col overflow-hidden select-none bg-gray-200 dark:bg-black transition-colors" id="preview-area">
+                <div class="absolute top-4 left-4 z-30 flex items-center gap-4 bg-white/80 dark:bg-[#18181b]/80 backdrop-blur rounded-lg px-3 py-1.5 border border-gray-200 dark:border-[#27272a] shadow-sm">
+                    <span class="text-xs font-bold text-gray-800 dark:text-white">Preview</span>
+                    <div class="w-[1px] h-3 bg-gray-300 dark:bg-gray-600"></div>
+                    <span class="text-[10px] text-gray-500 dark:text-gray-400">滚轮缩放 / 拖拽 / 双击复位</span>
+                    <div class="w-[1px] h-3 bg-gray-300 dark:bg-gray-600"></div>
+                    <button onclick="clearMainPreview()" class="text-gray-400 hover:text-red-500 text-xs"><i class="fa-solid fa-trash"></i></button>
+                </div>
+                <div id="time-badge" class="absolute top-4 right-4 z-30 hidden bg-purple-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg">
+                    <i class="fa-solid fa-stopwatch mr-1"></i><span id="time-val">0s</span>
+                </div>
+                <div id="zoom-container" class="w-full h-full flex items-center justify-center relative touch-none">
+                    <div id="empty-placeholder" class="text-center absolute pointer-events-none">
+                        <div class="w-24 h-24 mx-auto mb-4 rounded-full bg-white dark:bg-[#111] border border-gray-200 dark:border-[#222] flex items-center justify-center"><i class="fa-solid fa-image text-3xl text-gray-300 dark:text-[#333]"></i></div>
+                        <p class="text-gray-500 dark:text-gray-600 text-sm">图片预览区</p>
                     </div>
-                    <div id="time-badge" class="absolute top-4 right-4 z-30 hidden bg-purple-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg">
-                        <i class="fa-solid fa-stopwatch mr-1"></i><span id="time-val">0s</span>
-                    </div>
-                    <div id="zoom-container" class="w-full h-full flex items-center justify-center relative touch-none">
-                        <div id="empty-placeholder" class="text-center absolute pointer-events-none">
-                            <div class="w-24 h-24 mx-auto mb-4 rounded-full bg-white dark:bg-[#111] border border-gray-200 dark:border-[#222] flex items-center justify-center"><i class="fa-solid fa-image text-3xl text-gray-300 dark:text-[#333]"></i></div>
-                            <p class="text-gray-500 dark:text-gray-600 text-sm">图片预览区</p>
+                    <div id="img-wrapper" class="relative hidden shadow-2xl transition-transform duration-100 ease-out origin-center">
+                        <img id="main-image" class="max-h-[85vh] max-w-[85vw] object-contain block" draggable="false">
+                        <div id="compare-overlay" class="absolute inset-0 hidden">
+                            <img id="ref-image" class="w-full h-full object-contain block" draggable="false">
                         </div>
-                        <div id="img-wrapper" class="relative hidden shadow-2xl transition-transform duration-100 ease-out origin-center">
-                            <img id="main-image" class="max-h-[85vh] max-w-[85vw] object-contain block" draggable="false">
-                            <div id="compare-overlay" class="absolute inset-0 hidden">
-                                <img id="ref-image" class="w-full h-full object-contain block" draggable="false">
-                            </div>
-                            <div id="slider-handle" class="compare-slider hidden">
-                                <div class="compare-handle"><i class="fa-solid fa-left-right text-xs"></i></div>
-                            </div>
+                        <div id="slider-handle" class="compare-slider hidden">
+                            <div class="compare-handle"><i class="fa-solid fa-left-right text-xs"></i></div>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div id="resizer-tasklist" class="resizer-y bg-gray-200 dark:bg-[#1f1f22]"></div>
+        <div id="resizer-tasklist" class="resizer-y bg-gray-200 dark:bg-[#1f1f22]"></div>
 
-            <div id="task-panel" class="h-[220px] min-h-[150px] max-h-[600px] bg-white dark:bg-[#0c0c0e] flex-col shrink-0 z-20 transition-colors hidden md:flex pb-20 md:pb-0" data-tab="history">
-                <div class="px-4 py-2 flex items-center justify-between bg-gray-50 dark:bg-[#121214] border-b border-gray-100 dark:border-none">
-                    <div class="flex items-center gap-2">
-                        <input type="checkbox" id="select-all" class="task-checkbox" onchange="toggleSelectAll()">
-                        <span id="task-list-title" class="text-xs font-bold text-gray-600 dark:text-gray-300 transition-colors">任务列表</span>
-                    </div>
-                    <div id="batch-actions" class="hidden flex gap-2">
-                        <button onclick="batchDownload()" class="text-[10px] bg-purple-500/20 text-purple-500 hover:bg-purple-500 hover:text-white px-2 py-1 rounded transition border border-purple-500/30">下载选中</button>
-                        <button onclick="batchDelete()" class="text-[10px] bg-red-500/20 text-red-500 hover:bg-red-500 hover:text-white px-2 py-1 rounded transition border border-red-500/30">删除选中</button>
-                    </div>
+        <div id="task-panel" class="hidden md:flex h-[220px] min-h-[150px] max-h-[600px] bg-white dark:bg-[#0c0c0e] flex-col shrink-0 z-20 transition-colors pb-20 md:pb-0" data-tab="history">
+            <div class="px-4 py-2 flex items-center justify-between bg-gray-50 dark:bg-[#121214] border-b border-gray-100 dark:border-none">
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" id="select-all" class="task-checkbox" onchange="toggleSelectAll()">
+                    <span id="task-list-title" class="text-xs font-bold text-gray-600 dark:text-gray-300 transition-colors">任务列表</span>
                 </div>
-                <div id="history-list" class="flex-1 p-4 overflow-x-auto flex gap-4 items-center flex-nowrap md:flex-row flex-col md:overflow-y-hidden overflow-y-auto w-full">
-                    <div id="history-empty" class="text-xs text-gray-400 w-full text-center select-none">暂无历史任务</div>
+                <div id="batch-actions" class="hidden flex gap-2">
+                    <button onclick="batchDownload()" class="text-[10px] bg-purple-500/20 text-purple-500 hover:bg-purple-500 hover:text-white px-2 py-1 rounded transition border border-purple-500/30">下载选中</button>
+                    <button onclick="batchDelete()" class="text-[10px] bg-red-500/20 text-red-500 hover:bg-red-500 hover:text-white px-2 py-1 rounded transition border border-red-500/30">删除选中</button>
                 </div>
             </div>
-        </main>
+            <div id="history-list" class="flex-1 p-4 overflow-x-auto flex gap-4 items-center flex-nowrap md:flex-row flex-col md:overflow-y-hidden overflow-y-auto w-full">
+                <div id="history-empty" class="text-xs text-gray-400 w-full text-center select-none">暂无历史任务</div>
+            </div>
+        </div>
     </div>
 
     <nav class="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white dark:bg-[#0c0c0e] border-t border-gray-200 dark:border-[#27272a] z-50 flex items-center justify-around pb-safe">
@@ -344,7 +343,7 @@
         let isDraggingText = false;
         let draggingActionIndex = -1;
         let dragStartOffset = { x: 0, y: 0 };
-        let isSliding = false; // Add global slide flag
+        let isSliding = false; 
 
         window.addEventListener('DOMContentLoaded', () => {
             const savedKey = localStorage.getItem('nano_api_key');
@@ -379,21 +378,22 @@
             }
             updateModelRestrictions();
             
-            // 初始化移动端 Tab
             if(window.innerWidth < 768) {
                 switchMobileTab('settings');
             }
         });
 
-        // 移动端 Tab 切换逻辑
+        // 修复：更稳定的 Tab 切换逻辑
         function switchMobileTab(target) {
+            if(window.innerWidth >= 768) return; // Desktop ignore
+
             const panels = {
                 'settings': document.getElementById('left-panel'),
                 'preview': document.getElementById('preview-section-wrapper'),
                 'history': document.getElementById('task-panel')
             };
 
-            // Reset all btns
+            // Reset buttons
             document.querySelectorAll('.mobile-tab-btn').forEach(btn => {
                 btn.classList.remove('text-purple-500');
                 btn.classList.add('text-gray-400');
@@ -401,34 +401,35 @@
             document.querySelector(`.mobile-tab-btn[data-target="${target}"]`).classList.add('text-purple-500');
             document.querySelector(`.mobile-tab-btn[data-target="${target}"]`).classList.remove('text-gray-400');
 
-            // Hide all panels first (only if mobile)
-            if(window.innerWidth < 768) {
-                Object.values(panels).forEach(el => el.classList.add('mobile-hidden'));
-                // Show target
-                panels[target].classList.remove('mobile-hidden');
-                panels[target].classList.add('mobile-block');
-                
-                // Special layout handling
-                if(target === 'preview') {
-                    panels[target].classList.add('mobile-flex');
-                } else if(target === 'history') {
-                    document.getElementById('history-list').classList.remove('flex-nowrap');
-                    document.getElementById('history-list').classList.add('flex-col');
-                    panels[target].classList.add('mobile-flex');
-                }
-            }
+            // Hide all first
+            Object.values(panels).forEach(el => {
+                el.classList.add('mobile-hidden');
+                el.classList.remove('mobile-view');
+            });
+
+            // Show target with specific mobile view class
+            panels[target].classList.remove('mobile-hidden');
+            panels[target].classList.add('mobile-view');
         }
         
-        // 监听窗口大小变化，重置布局
+        // 修复：移除 resize 中的死循环逻辑
         window.addEventListener('resize', () => {
             if(window.innerWidth >= 768) {
-                document.getElementById('left-panel').classList.remove('mobile-hidden', 'mobile-block');
-                document.getElementById('preview-section-wrapper').classList.remove('mobile-hidden', 'mobile-flex', 'mobile-block');
-                document.getElementById('task-panel').classList.remove('mobile-hidden', 'mobile-flex', 'mobile-block');
+                // Reset to desktop view
+                const panels = [document.getElementById('left-panel'), document.getElementById('preview-section-wrapper'), document.getElementById('task-panel')];
+                panels.forEach(p => {
+                    p.classList.remove('mobile-hidden', 'mobile-view');
+                });
             } else {
-                // Keep current state or reset to settings
+                // 仅在当前没有激活 Tab 时才初始化，避免循环
                 const activeBtn = document.querySelector('.mobile-tab-btn.text-purple-500');
-                if(activeBtn) switchMobileTab(activeBtn.dataset.target);
+                if(!activeBtn) switchMobileTab('settings');
+                else {
+                    // 重新应用一下当前 Tab 的 class，确保 display 正确
+                    const target = activeBtn.dataset.target;
+                    const el = document.querySelector(`[data-tab="${target}"]`);
+                    if(el) el.classList.add('mobile-view');
+                }
             }
         });
 
@@ -728,8 +729,6 @@
         function startPan(e) {
             if (e.target.closest('#slider-handle')) { isSliding = true; e.preventDefault(); return; } 
             if (imgWrapper.classList.contains('hidden')) return; 
-            // Only prevent default if we are interacting with canvas, allowing normal page scroll otherwise
-            // But here zoomContainer has overflow hidden and acts as a viewport
             if(e.type === 'touchstart') e.preventDefault(); 
             
             startX = getEvtX(e) - pointX; 
@@ -853,7 +852,7 @@
                 if (allResults.length > 0) { 
                     setMainImage(allResults[0].url, duration, originalRefImage); 
                     allResults.forEach(img => addToHistory(img.url, prompt, duration)); 
-                    if(window.innerWidth < 768) switchMobileTab('preview'); // Auto switch to preview on mobile
+                    if(window.innerWidth < 768) switchMobileTab('preview'); 
                 } else { 
                     alert("生成失败，请检查设置或重试"); 
                 }
@@ -886,8 +885,8 @@
             const list = document.getElementById('history-list');
             const empty = document.getElementById('history-empty'); if (empty) empty.remove();
             const item = document.createElement('div');
-            // Modified class for responsive grid vs flex row
-            item.className = "history-item group relative flex-shrink-0 aspect-[4/3] h-32 md:h-full w-full md:w-auto bg-gray-900 rounded-xl overflow-hidden border border-gray-700 cursor-pointer hover:border-purple-500 transition shadow-lg mb-2 md:mb-0";
+            // 修复：确保移动端是全宽卡片，不再被挤压
+            item.className = "history-item group relative flex-shrink-0 aspect-[16/9] md:aspect-[4/3] md:h-full w-full md:w-auto bg-gray-900 rounded-xl overflow-hidden border border-gray-700 cursor-pointer hover:border-purple-500 transition shadow-lg mb-4 md:mb-0";
             item.dataset.url = url; item.dataset.prompt = encodeURIComponent(prompt); item.dataset.duration = duration;
             item.onclick = (e) => { 
                 if(!e.target.closest('.task-checkbox') && !e.target.closest('button')) { 
