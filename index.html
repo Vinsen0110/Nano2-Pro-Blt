@@ -114,7 +114,7 @@
                         <button onclick="clearAllSlots()" class="text-[10px] text-red-500 hover:text-red-400 cursor-pointer ml-auto">清空全部</button>
                     </div>
                     <input type="file" id="slot-file-input" class="hidden" accept="image/*" onchange="handleSlotFile(event)">
-                    <div id="slots-grid" class="grid grid-cols-3 gap-2 select-none"></div>
+                    <div id="slots-grid" class="grid grid-cols-3 gap-2 select-none min-h-[100px]"></div>
                 </div>
 
                 <div class="space-y-2">
@@ -182,7 +182,7 @@
                     <i class="fa-solid fa-arrow-left"></i> 导入
                 </button>
                 <div class="flex items-center gap-4">
-                    <button onclick="downloadCurrentImage()" class="text-xs text-gray-500 dark:text-gray-400 hover:text-purple-500 dark:hover:text-purple-500 flex items-center gap-2 transition">下载 JPG <i class="fa-solid fa-download"></i></button>
+                    <button onclick="downloadCurrentImage()" class="text-xs text-gray-500 dark:text-gray-400 hover:text-purple-500 dark:hover:text-purple-500 flex items-center gap-2 transition">下载 <i class="fa-solid fa-download"></i></button>
                 </div>
             </div>
 
@@ -279,14 +279,13 @@
                     <div class="flex gap-2 mt-2">
                         <button onclick="fillApiUrl('https://ai.t8star.cn')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-pink-50 dark:bg-pink-900/20 border border-pink-200 dark:border-pink-800 text-xs font-bold text-pink-600 dark:text-pink-400 hover:bg-pink-100 dark:hover:bg-pink-900/40 transition cursor-pointer"><i class="fa-solid fa-spa"></i> 贞贞: ai.t8star.cn</button>
                         <button onclick="fillApiUrl('https://api.bltcy.ai')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-xs font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition cursor-pointer"><i class="fa-solid fa-landmark"></i> 柏拉图: api.bltcy.ai</button>
+                        <button onclick="fillApiUrl('https://ai.yijiarj.cn')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 transition cursor-pointer"><i class="fa-solid fa-fire"></i> 一加: ai.yijiarj.cn</button>
                     </div>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-gray-500 mb-2 uppercase">API Key</label>
                     <input type="password" id="modal-api-key" class="w-full bg-gray-50 dark:bg-[#0c0c0e] border border-gray-300 dark:border-[#27272a] rounded p-3 text-sm text-gray-800 dark:text-gray-200 outline-none focus:border-purple-500" placeholder="sk-xxxxxxxx">
-                    <p class="text-[10px] text-gray-400 mt-1">Key 和 URL 配置保存在本地。</p>
                 </div>
-                
                 <div class="pt-2 border-t border-gray-100 dark:border-gray-800">
                     <div class="flex items-center justify-between mb-1.5">
                         <label class="text-xs font-bold text-gray-500 ml-1">ImgBB 图床 Key (可选)</label>
@@ -294,14 +293,12 @@
                     </div>
                     <input type="password" id="setting-imgbb" class="w-full bg-gray-50 dark:bg-[#0c0c0e] border border-gray-200 dark:border-[#27272a] rounded-xl p-3 text-sm dark:text-gray-200 font-mono outline-none focus:border-violet-500 transition" placeholder="一加API自动上传需填...">
                 </div>
-
                 <button onclick="saveSettings()" class="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 rounded transition">保存配置</button>
             </div>
         </div>
     </div>
 
     <script>
-        // 1. 全局变量定义 (防止局部作用域错误)
         const DEFAULT_API_URL = "https://api.bltcy.ai"; 
         const MAX_SLOTS = 9;
         let imageSlots = new Array(MAX_SLOTS).fill(null);
@@ -314,7 +311,6 @@
         let historyData = [];
         let isDrawing = false; let ctx = null; let currentColor = '#ef4444'; let currentTool = 'brush'; let editTargetIndex = -1; let canvas = document.getElementById('paint-canvas'); let drawActions = []; let currentPath = null; let baseImage = null; let isDraggingText = false; let draggingActionIndex = -1; let dragStartOffset = { x: 0, y: 0 };
         
-        // 声明全局DOM变量 (初始化在 initApp)
         let zoomContainer, imgWrapper, sliderHandle, compareOverlay;
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -323,7 +319,6 @@
         });
 
         function initApp() {
-            // 初始化全局DOM引用
             zoomContainer = document.getElementById('zoom-container');
             imgWrapper = document.getElementById('img-wrapper');
             sliderHandle = document.getElementById('slider-handle');
@@ -344,34 +339,24 @@
                 } catch (e) { console.error("History Load Error", e); }
             }
             updateModelRestrictions();
-            setupTouchEvents(); // 初始化触控
+            setupTouchEvents(); 
         }
 
-        // 🟢 核心触控修复逻辑
         function setupTouchEvents() {
             function getClientXY(e) {
                 return e.touches ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : { x: e.clientX, y: e.clientY };
             }
-
             function handleStart(e) {
-                if (e.target.closest('#slider-handle')) {
-                    isSliding = true;
-                } else if (!imgWrapper.classList.contains('hidden')) {
-                    panning = true;
-                    const { x, y } = getClientXY(e);
-                    startX = x - pointX;
-                    startY = y - pointY;
-                }
+                if (e.target.closest('#slider-handle')) { isSliding = true; } 
+                else if (!imgWrapper.classList.contains('hidden')) { panning = true; const { x, y } = getClientXY(e); startX = x - pointX; startY = y - pointY; }
             }
-
             function handleMove(e) {
                 if (isSliding) {
                     e.preventDefault(); 
                     const { x } = getClientXY(e);
                     const rect = imgWrapper.getBoundingClientRect();
                     let relativeX = x - rect.left;
-                    if (relativeX < 0) relativeX = 0;
-                    if (relativeX > rect.width) relativeX = rect.width;
+                    if (relativeX < 0) relativeX = 0; if (relativeX > rect.width) relativeX = rect.width;
                     const percentage = (relativeX / rect.width) * 100;
                     sliderHandle.style.left = percentage + '%';
                     compareOverlay.style.clipPath = `inset(0 ${100 - percentage}% 0 0)`;
@@ -383,16 +368,13 @@
                     updateTransform();
                 }
             }
-
             function handleEnd() { panning = false; isSliding = false; }
-
             zoomContainer.addEventListener('mousedown', handleStart);
             zoomContainer.addEventListener('touchstart', handleStart, { passive: false });
             window.addEventListener('mousemove', handleMove);
             window.addEventListener('touchmove', handleMove, { passive: false });
             window.addEventListener('mouseup', handleEnd);
             window.addEventListener('touchend', handleEnd);
-
             let lastTap = 0;
             zoomContainer.addEventListener('touchend', (e) => {
                 const currentTime = new Date().getTime();
@@ -401,7 +383,6 @@
                 lastTap = currentTime;
             });
             zoomContainer.addEventListener('dblclick', resetZoom);
-            
             zoomContainer.addEventListener('wheel', (e) => { 
                 if (imgWrapper.classList.contains('hidden')) return; 
                 e.preventDefault(); 
@@ -412,7 +393,6 @@
             });
         }
 
-        // 🟢 Tab切换
         function switchMobileTab(tabName) {
             const leftPanel = document.getElementById('left-panel');
             const rightPanel = document.getElementById('right-panel');
@@ -441,7 +421,6 @@
             }
         }
 
-        // === 常规逻辑 ===
         function updateTransform() { imgWrapper.style.transform = `translate(${pointX}px, ${pointY}px) scale(${scale})`; }
         function resetZoom() { scale = 1; pointX = 0; pointY = 0; updateTransform(); }
         function fillApiUrl(url) { document.getElementById('modal-api-url').value = url; const input = document.getElementById('modal-api-url'); input.classList.add('ring-2', 'ring-purple-500'); setTimeout(() => input.classList.remove('ring-2', 'ring-purple-500'), 200); }
@@ -468,23 +447,7 @@
         function toggleTheme() { const html = document.documentElement; const icon = document.getElementById('theme-icon'); if (html.classList.contains('dark')) { html.classList.remove('dark'); icon.className = 'fa-solid fa-sun text-purple-500'; localStorage.setItem('nano_theme', 'light'); } else { html.classList.add('dark'); icon.className = 'fa-solid fa-moon'; localStorage.setItem('nano_theme', 'dark'); } }
         function openSettings() { document.getElementById('settings-modal').classList.remove('hidden'); }
         function closeSettings() { document.getElementById('settings-modal').classList.add('hidden'); }
-        
-        function saveSettings() { 
-            const key = document.getElementById('modal-api-key').value.trim(); 
-            const url = document.getElementById('modal-api-url').value.trim();
-            const imgbb = document.getElementById('setting-imgbb').value.trim();
-            if (key) { 
-                localStorage.setItem('nano_api_key', key); 
-                localStorage.setItem('nano_api_url', url || DEFAULT_API_URL);
-                localStorage.setItem('nano_imgbb_key', imgbb);
-                updateApiDisplay(url || DEFAULT_API_URL); 
-                updateModelRestrictions();
-                closeSettings(); 
-            } else { 
-                alert("请输入API Key"); 
-            } 
-        }
-
+        function saveSettings() { const key = document.getElementById('modal-api-key').value.trim(); const url = document.getElementById('modal-api-url').value.trim(); const imgbb = document.getElementById('setting-imgbb').value.trim(); if (key) { localStorage.setItem('nano_api_key', key); localStorage.setItem('nano_api_url', url || DEFAULT_API_URL); localStorage.setItem('nano_imgbb_key', imgbb); updateApiDisplay(url || DEFAULT_API_URL); updateModelRestrictions(); closeSettings(); } else { alert("请输入API Key"); } }
         const leftPanel = document.getElementById('left-panel'), resizerSidebar = document.getElementById('resizer-sidebar');
         const taskPanel = document.getElementById('task-panel'), resizerTasklist = document.getElementById('resizer-tasklist');
         resizerSidebar.addEventListener('mousedown', (e) => { e.preventDefault(); document.body.classList.add('no-select'); document.addEventListener('mousemove', resizeSidebar); document.addEventListener('mouseup', stopResizeSidebar); });
@@ -500,7 +463,8 @@
             grid.innerHTML = '';
             imageSlots.forEach((file, index) => {
                 const slotNum = index + 1; const div = document.createElement('div');
-                div.className = `relative w-full aspect-[4/3] rounded-lg border-2 border-dashed transition-all cursor-pointer overflow-hidden flex flex-col items-center justify-center group ${file ? 'border-transparent bg-gray-900' : 'border-gray-300 dark:border-[#27272a] hover:border-purple-500 dark:hover:border-purple-500 bg-gray-50 dark:bg-[#18181b] hover:bg-purple-50 dark:hover:bg-[#1f1f22]'}`;
+                // 修复：增加 min-height 确保格子不塌陷，加粗边框
+                div.className = `relative w-full aspect-[4/3] min-h-[80px] rounded-lg border-2 border-dashed transition-all cursor-pointer overflow-hidden flex flex-col items-center justify-center group ${file ? 'border-transparent bg-gray-900' : 'border-gray-400 dark:border-gray-600 hover:border-purple-500 dark:hover:border-purple-500 bg-gray-50 dark:bg-[#18181b] hover:bg-purple-50 dark:hover:bg-[#1f1f22]'}`;
                 if (file) {
                     const reader = new FileReader();
                     reader.onload = (e) => {
@@ -534,7 +498,27 @@
         function batchDelete() { const checked = document.querySelectorAll('#history-list .task-checkbox:checked'); if(checked.length === 0) return; if(!confirm(`确认删除选中的 ${checked.length} 张任务吗？`)) return; checked.forEach(cb => { const item = cb.closest('.history-item'); const urlToRemove = item.dataset.url; historyData = historyData.filter(d => d.url !== urlToRemove); item.remove(); }); saveHistoryToLocal(); updateBatchState(); if(document.getElementById('history-list').children.length === 0) document.getElementById('history-list').innerHTML = '<div id="history-empty" class="text-xs text-gray-400 w-full text-center select-none">暂无历史任务</div>'; }
         function viewOriginal(src) { document.getElementById('lightbox-img').src = src; document.getElementById('lightbox-modal').classList.remove('hidden'); }
         function closeLightbox() { document.getElementById('lightbox-modal').classList.add('hidden'); }
-        async function downloadSingleImage(url) { try { const r = await fetch(url); const b = await r.blob(); const u = window.URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = `nano_${Date.now()}.jpg`; document.body.appendChild(a); a.click(); document.body.removeChild(a); window.URL.revokeObjectURL(u); } catch (e) { window.open(url, '_blank'); } }
+        
+        // 🔴 修复：移动端下载逻辑
+        async function downloadSingleImage(url) {
+            try {
+                // 1. 尝试直接获取 Blob
+                const r = await fetch(url);
+                const b = await r.blob();
+                const u = window.URL.createObjectURL(b);
+                const a = document.createElement('a');
+                a.href = u;
+                a.download = `nano_${Date.now()}.jpg`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(u);
+            } catch (e) {
+                // 2. 如果失败，尝试新窗口打开 (iOS Safari 友好)
+                window.open(url, '_blank');
+            }
+        }
+
         function deleteHistoryItem(btn) { const item = btn.closest('.history-item'); if(item) { const urlToRemove = item.dataset.url; historyData = historyData.filter(d => d.url !== urlToRemove); saveHistoryToLocal(); item.remove(); updateBatchState(); if(document.getElementById('history-list').children.length === 0) document.getElementById('history-list').innerHTML = '<div id="history-empty" class="text-xs text-gray-400 w-full text-center select-none">暂无历史任务</div>'; } }
         async function downloadCurrentImage() { if (!currentMainImageUrl) { alert("当前没有图片"); return; } downloadSingleImage(currentMainImageUrl); }
         async function importCurrentImage() { if(!currentMainImageUrl) { alert("当前没有可导入的图片"); return; } const emptyIndex = imageSlots.findIndex(slot => slot === null); if (emptyIndex === -1) { alert("格子已满 (9张)，请先删除一些图片"); return; } try { const r = await fetch(currentMainImageUrl); const b = await r.blob(); const f = new File([b], `import_${Date.now()}.jpg`, { type: b.type }); imageSlots[emptyIndex] = f; renderSlots(); if(window.innerWidth < 768) switchMobileTab('create'); } catch(e) { alert("导入失败"); } }
