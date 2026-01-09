@@ -26,10 +26,9 @@
         .active-btn { background-color: #a855f7; color: white; border-color: #a855f7; font-weight: bold; }
         
         /* 预览区样式 */
-        #zoom-container { overflow: hidden; cursor: grab; position: relative; touch-action: none; /* 关键：禁止浏览器默认滚动 */ }
+        #zoom-container { overflow: hidden; cursor: grab; position: relative; touch-action: none; }
         #zoom-container:active { cursor: grabbing; }
         .compare-slider { position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; background: rgba(255, 255, 255, 0.8); z-index: 40; cursor: ew-resize; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
-        /* 加大触控区域，方便手机拖动 */
         .compare-handle { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: black; box-shadow: 0 4px 12px rgba(0,0,0,0.4); z-index: 50; }
         
         .task-checkbox { width: 16px; height: 16px; accent-color: #a855f7; cursor: pointer; }
@@ -68,7 +67,7 @@
             <div class="w-8 h-8 bg-white rounded-lg border border-gray-200 shadow-sm shrink-0 overflow-hidden">
                 <img src="https://raw.githubusercontent.com/Vinsen0110/Nano2-Pro-Zz/main/nanobanana.jpg" class="w-full h-full object-cover" alt="Logo" onerror="this.src='kitty.png'">
             </div>
-            <span class="font-bold text-lg tracking-tight text-gray-900 dark:text-gray-100">Nanobanana Pro</span>
+            <span class="font-bold text-lg tracking-tight text-gray-900 dark:text-gray-100">Nano Banana Pro</span>
         </div>
         
         <div class="flex items-center gap-3 text-sm">
@@ -132,13 +131,19 @@
                     <div class="relative">
                         <select id="ratio-select" class="w-full custom-input rounded px-3 py-2 text-sm bg-gray-50 border-gray-300 text-black dark:bg-[#18181b] dark:border-[#27272a] dark:text-white appearance-none cursor-pointer">
                             <option value="1:1">1:1 (正方形)</option>
+                            <option value="2:3">2:3 (竖屏)</option>
+                            <option value="3:2">3:2 (横屏)</option>
                             <option value="3:4">3:4 (竖屏)</option>
                             <option value="4:3">4:3 (横屏)</option>
+                            <option value="4:5">4:5 (竖屏)</option>
+                            <option value="5:4">5:4 (横屏)</option>
                             <option value="9:16">9:16 (手机屏)</option>
                             <option value="16:9">16:9 (电脑屏)</option>
                             <option value="21:9">21:9 (超宽屏)</option>
                         </select>
-                        <div class="absolute right-3 top-2.5 text-gray-500 pointer-events-none"><i class="fa-solid fa-chevron-down text-xs"></i></div>
+                        <div class="absolute right-3 top-2.5 text-gray-500 pointer-events-none">
+                            <i class="fa-solid fa-chevron-down text-xs"></i>
+                        </div>
                     </div>
                 </div>
 
@@ -171,11 +176,13 @@
 
         <div id="resizer-sidebar" class="resizer-x bg-gray-200 dark:bg-[#1f1f22]"></div>
 
-        <main class="w-full md:flex-1 flex flex-col min-w-0 bg-gray-100 dark:bg-black transition-colors shrink-0 h-auto md:h-full hidden md:flex absolute inset-0 md:static" id="right-panel">
+        <main class="flex-1 flex flex-col min-w-0 bg-gray-100 dark:bg-black transition-colors" id="right-panel">
             <div class="h-12 border-b border-gray-200 dark:border-[#27272a] bg-white dark:bg-[#0c0c0e] flex items-center justify-between px-4 shrink-0 z-20 transition-colors">
-                <button onclick="importCurrentImage()" class="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white flex items-center gap-2 transition"><i class="fa-solid fa-arrow-left"></i> 导入</button>
+                <button onclick="importCurrentImage()" class="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white flex items-center gap-2 transition" title="将当前图作为参考图">
+                    <i class="fa-solid fa-arrow-left"></i> 导入
+                </button>
                 <div class="flex items-center gap-4">
-                    <button onclick="downloadCurrentImage()" class="text-xs text-gray-500 dark:text-gray-400 hover:text-purple-500 dark:hover:text-purple-500 flex items-center gap-2 transition">下载 <i class="fa-solid fa-download"></i></button>
+                    <button onclick="downloadCurrentImage()" class="text-xs text-gray-500 dark:text-gray-400 hover:text-purple-500 dark:hover:text-purple-500 flex items-center gap-2 transition">下载 JPG <i class="fa-solid fa-download"></i></button>
                 </div>
             </div>
 
@@ -217,7 +224,7 @@
                         <button onclick="batchDelete()" class="text-[10px] bg-red-500/20 text-red-500 hover:bg-red-500 hover:text-white px-2 py-1 rounded transition border border-red-500/30">删除选中</button>
                     </div>
                 </div>
-                <div id="history-list" class="flex-1 p-4 overflow-y-auto md:overflow-x-auto flex flex-col md:flex-row gap-4 items-center md:items-start w-full">
+                <div id="history-list" class="flex-1 p-4 overflow-x-auto flex gap-4 items-center">
                     <div id="history-empty" class="text-xs text-gray-400 w-full text-center select-none pt-10">暂无历史任务</div>
                 </div>
             </div>
@@ -279,23 +286,36 @@
                     <input type="password" id="modal-api-key" class="w-full bg-gray-50 dark:bg-[#0c0c0e] border border-gray-300 dark:border-[#27272a] rounded p-3 text-sm text-gray-800 dark:text-gray-200 outline-none focus:border-purple-500" placeholder="sk-xxxxxxxx">
                     <p class="text-[10px] text-gray-400 mt-1">Key 和 URL 配置保存在本地。</p>
                 </div>
+                
+                <div class="pt-2 border-t border-gray-100 dark:border-gray-800">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="text-xs font-bold text-gray-500 ml-1">ImgBB 图床 Key (可选)</label>
+                        <a href="https://api.imgbb.com/" target="_blank" class="text-[10px] text-violet-500 hover:underline">获取免费Key</a>
+                    </div>
+                    <input type="password" id="setting-imgbb" class="w-full bg-gray-50 dark:bg-[#0c0c0e] border border-gray-200 dark:border-[#27272a] rounded-xl p-3 text-sm dark:text-gray-200 font-mono outline-none focus:border-violet-500 transition" placeholder="一加API自动上传需填...">
+                </div>
+
                 <button onclick="saveSettings()" class="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 rounded transition">保存配置</button>
             </div>
         </div>
     </div>
 
     <script>
-        // 核心变量
+        // 1. 全局变量定义 (防止局部作用域错误)
         const DEFAULT_API_URL = "https://api.bltcy.ai"; 
         const MAX_SLOTS = 9;
         let imageSlots = new Array(MAX_SLOTS).fill(null);
         let currentActiveSlot = -1; 
         let batchSize = 1;
         let currentMainImageUrl = ""; 
-        let scale = 1, panning = false, isSliding = false, pointX = 0, pointY = 0, startX = 0, startY = 0;
+        let scale = 1, pointX = 0, pointY = 0, startX = 0, startY = 0;
+        let panning = false, isSliding = false;
         let originalRefImage = null; 
         let historyData = [];
         let isDrawing = false; let ctx = null; let currentColor = '#ef4444'; let currentTool = 'brush'; let editTargetIndex = -1; let canvas = document.getElementById('paint-canvas'); let drawActions = []; let currentPath = null; let baseImage = null; let isDraggingText = false; let draggingActionIndex = -1; let dragStartOffset = { x: 0, y: 0 };
+        
+        // 声明全局DOM变量 (初始化在 initApp)
+        let zoomContainer, imgWrapper, sliderHandle, compareOverlay;
 
         window.addEventListener('DOMContentLoaded', () => {
             initApp();
@@ -303,18 +323,13 @@
         });
 
         function initApp() {
-            const savedKey = localStorage.getItem('nano_api_key');
-            if (savedKey) document.getElementById('modal-api-key').value = savedKey; 
-            const savedUrl = localStorage.getItem('nano_api_url');
-            document.getElementById('modal-api-url').value = savedUrl || DEFAULT_API_URL;
-            updateApiDisplay(savedUrl || DEFAULT_API_URL);
-            if (!savedKey) openSettings();
+            // 初始化全局DOM引用
+            zoomContainer = document.getElementById('zoom-container');
+            imgWrapper = document.getElementById('img-wrapper');
+            sliderHandle = document.getElementById('slider-handle');
+            compareOverlay = document.getElementById('compare-overlay');
 
-            const savedTheme = localStorage.getItem('nano_theme');
-            const icon = document.getElementById('theme-icon');
-            if (savedTheme === 'light') { document.documentElement.classList.remove('dark'); icon.className = 'fa-solid fa-sun text-purple-500'; }
-            else { document.documentElement.classList.add('dark'); icon.className = 'fa-solid fa-moon'; }
-            
+            loadSettings(); loadTheme(); 
             ctx = canvas.getContext('2d');
             document.getElementById('text-tool-input').addEventListener('keydown', (e) => { if(e.key === 'Enter') finalizeText(); });
             renderSlots();
@@ -332,6 +347,72 @@
             setupTouchEvents(); // 初始化触控
         }
 
+        // 🟢 核心触控修复逻辑
+        function setupTouchEvents() {
+            function getClientXY(e) {
+                return e.touches ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : { x: e.clientX, y: e.clientY };
+            }
+
+            function handleStart(e) {
+                if (e.target.closest('#slider-handle')) {
+                    isSliding = true;
+                } else if (!imgWrapper.classList.contains('hidden')) {
+                    panning = true;
+                    const { x, y } = getClientXY(e);
+                    startX = x - pointX;
+                    startY = y - pointY;
+                }
+            }
+
+            function handleMove(e) {
+                if (isSliding) {
+                    e.preventDefault(); 
+                    const { x } = getClientXY(e);
+                    const rect = imgWrapper.getBoundingClientRect();
+                    let relativeX = x - rect.left;
+                    if (relativeX < 0) relativeX = 0;
+                    if (relativeX > rect.width) relativeX = rect.width;
+                    const percentage = (relativeX / rect.width) * 100;
+                    sliderHandle.style.left = percentage + '%';
+                    compareOverlay.style.clipPath = `inset(0 ${100 - percentage}% 0 0)`;
+                } else if (panning) {
+                    e.preventDefault(); 
+                    const { x, y } = getClientXY(e);
+                    pointX = x - startX;
+                    pointY = y - startY;
+                    updateTransform();
+                }
+            }
+
+            function handleEnd() { panning = false; isSliding = false; }
+
+            zoomContainer.addEventListener('mousedown', handleStart);
+            zoomContainer.addEventListener('touchstart', handleStart, { passive: false });
+            window.addEventListener('mousemove', handleMove);
+            window.addEventListener('touchmove', handleMove, { passive: false });
+            window.addEventListener('mouseup', handleEnd);
+            window.addEventListener('touchend', handleEnd);
+
+            let lastTap = 0;
+            zoomContainer.addEventListener('touchend', (e) => {
+                const currentTime = new Date().getTime();
+                const tapLength = currentTime - lastTap;
+                if (tapLength < 300 && tapLength > 0) { resetZoom(); e.preventDefault(); }
+                lastTap = currentTime;
+            });
+            zoomContainer.addEventListener('dblclick', resetZoom);
+            
+            zoomContainer.addEventListener('wheel', (e) => { 
+                if (imgWrapper.classList.contains('hidden')) return; 
+                e.preventDefault(); 
+                const delta = -e.deltaY; 
+                (delta > 0) ? (scale *= 1.1) : (scale /= 1.1); 
+                if (scale < 0.5) scale = 0.5; if (scale > 5) scale = 5; 
+                updateTransform(); 
+            });
+        }
+
+        // 🟢 Tab切换
         function switchMobileTab(tabName) {
             const leftPanel = document.getElementById('left-panel');
             const rightPanel = document.getElementById('right-panel');
@@ -360,93 +441,8 @@
             }
         }
 
-        // 🟢 核心触控修复逻辑
-        function setupTouchEvents() {
-            const zoomContainer = document.getElementById('zoom-container');
-            const imgWrapper = document.getElementById('img-wrapper');
-            const sliderHandle = document.getElementById('slider-handle');
-            const compareOverlay = document.getElementById('compare-overlay');
-
-            // 辅助函数：获取触摸或鼠标坐标
-            function getClientXY(e) {
-                return e.touches ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : { x: e.clientX, y: e.clientY };
-            }
-
-            // 开始触摸/点击
-            function handleStart(e) {
-                if (e.target.closest('#slider-handle')) {
-                    isSliding = true;
-                    // 不阻止默认，为了不卡顿，但逻辑里会处理
-                } else if (!imgWrapper.classList.contains('hidden')) {
-                    panning = true;
-                    const { x, y } = getClientXY(e);
-                    startX = x - pointX;
-                    startY = y - pointY;
-                }
-            }
-
-            // 移动
-            function handleMove(e) {
-                if (isSliding) {
-                    e.preventDefault(); // 阻止滚动，保证滑块流畅
-                    const { x } = getClientXY(e);
-                    const rect = imgWrapper.getBoundingClientRect();
-                    let relativeX = x - rect.left;
-                    if (relativeX < 0) relativeX = 0;
-                    if (relativeX > rect.width) relativeX = rect.width;
-                    const percentage = (relativeX / rect.width) * 100;
-                    sliderHandle.style.left = percentage + '%';
-                    compareOverlay.style.clipPath = `inset(0 ${100 - percentage}% 0 0)`;
-                } else if (panning) {
-                    e.preventDefault(); // 阻止滚动，保证拖图流畅
-                    const { x, y } = getClientXY(e);
-                    pointX = x - startX;
-                    pointY = y - startY;
-                    updateTransform();
-                }
-            }
-
-            // 结束
-            function handleEnd() {
-                panning = false;
-                isSliding = false;
-            }
-
-            zoomContainer.addEventListener('mousedown', handleStart);
-            zoomContainer.addEventListener('touchstart', handleStart, { passive: false });
-
-            window.addEventListener('mousemove', handleMove);
-            window.addEventListener('touchmove', handleMove, { passive: false });
-
-            window.addEventListener('mouseup', handleEnd);
-            window.addEventListener('touchend', handleEnd);
-
-            // 双击复位 (适配双击事件)
-            let lastTap = 0;
-            zoomContainer.addEventListener('touchend', (e) => {
-                const currentTime = new Date().getTime();
-                const tapLength = currentTime - lastTap;
-                if (tapLength < 300 && tapLength > 0) {
-                    resetZoom();
-                    e.preventDefault();
-                }
-                lastTap = currentTime;
-            });
-            zoomContainer.addEventListener('dblclick', resetZoom);
-            
-            // 滚轮缩放 (保持电脑端功能)
-            zoomContainer.addEventListener('wheel', (e) => { 
-                if (imgWrapper.classList.contains('hidden')) return; 
-                e.preventDefault(); 
-                const delta = -e.deltaY; 
-                (delta > 0) ? (scale *= 1.1) : (scale /= 1.1); 
-                if (scale < 0.5) scale = 0.5; if (scale > 5) scale = 5; 
-                updateTransform(); 
-            });
-        }
-
-        // ... (以下函数保持 v3.3 的所有逻辑不变) ...
-        function updateTransform() { const imgWrapper = document.getElementById('img-wrapper'); imgWrapper.style.transform = `translate(${pointX}px, ${pointY}px) scale(${scale})`; }
+        // === 常规逻辑 ===
+        function updateTransform() { imgWrapper.style.transform = `translate(${pointX}px, ${pointY}px) scale(${scale})`; }
         function resetZoom() { scale = 1; pointX = 0; pointY = 0; updateTransform(); }
         function fillApiUrl(url) { document.getElementById('modal-api-url').value = url; const input = document.getElementById('modal-api-url'); input.classList.add('ring-2', 'ring-purple-500'); setTimeout(() => input.classList.remove('ring-2', 'ring-purple-500'), 200); }
         function updateApiDisplay(url) { try { const hostname = new URL(url).hostname; document.getElementById('current-api-display').innerText = "当前: " + hostname; } catch (e) { document.getElementById('current-api-display').innerText = "当前: Custom"; } }
@@ -472,7 +468,23 @@
         function toggleTheme() { const html = document.documentElement; const icon = document.getElementById('theme-icon'); if (html.classList.contains('dark')) { html.classList.remove('dark'); icon.className = 'fa-solid fa-sun text-purple-500'; localStorage.setItem('nano_theme', 'light'); } else { html.classList.add('dark'); icon.className = 'fa-solid fa-moon'; localStorage.setItem('nano_theme', 'dark'); } }
         function openSettings() { document.getElementById('settings-modal').classList.remove('hidden'); }
         function closeSettings() { document.getElementById('settings-modal').classList.add('hidden'); }
-        function saveSettings() { const key = document.getElementById('modal-api-key').value.trim(); const url = document.getElementById('modal-api-url').value.trim(); if (key) { localStorage.setItem('nano_api_key', key); localStorage.setItem('nano_api_url', url || DEFAULT_API_URL); updateApiDisplay(url || DEFAULT_API_URL); updateModelRestrictions(); closeSettings(); } else { alert("请输入API Key"); } }
+        
+        function saveSettings() { 
+            const key = document.getElementById('modal-api-key').value.trim(); 
+            const url = document.getElementById('modal-api-url').value.trim();
+            const imgbb = document.getElementById('setting-imgbb').value.trim();
+            if (key) { 
+                localStorage.setItem('nano_api_key', key); 
+                localStorage.setItem('nano_api_url', url || DEFAULT_API_URL);
+                localStorage.setItem('nano_imgbb_key', imgbb);
+                updateApiDisplay(url || DEFAULT_API_URL); 
+                updateModelRestrictions();
+                closeSettings(); 
+            } else { 
+                alert("请输入API Key"); 
+            } 
+        }
+
         const leftPanel = document.getElementById('left-panel'), resizerSidebar = document.getElementById('resizer-sidebar');
         const taskPanel = document.getElementById('task-panel'), resizerTasklist = document.getElementById('resizer-tasklist');
         resizerSidebar.addEventListener('mousedown', (e) => { e.preventDefault(); document.body.classList.add('no-select'); document.addEventListener('mousemove', resizeSidebar); document.addEventListener('mouseup', stopResizeSidebar); });
@@ -481,48 +493,41 @@
         resizerTasklist.addEventListener('mousedown', (e) => { e.preventDefault(); document.body.classList.add('no-select'); document.addEventListener('mousemove', resizeTasklist); document.addEventListener('mouseup', stopResizeTasklist); });
         function resizeTasklist(e) { const h = window.innerHeight - e.clientY; if (h > 120 && h < 600) taskPanel.style.height = h + 'px'; }
         function stopResizeTasklist() { document.body.classList.remove('no-select'); document.removeEventListener('mousemove', resizeTasklist); document.removeEventListener('mouseup', stopResizeTasklist); }
-        function renderSlots() { const grid = document.getElementById('slots-grid'); const currentModel = document.getElementById('model-input').value; const canDoodle = (currentModel === 'nano-banana-2-4k'); grid.innerHTML = ''; imageSlots.forEach((file, index) => { const slotNum = index + 1; const div = document.createElement('div'); div.className = `relative w-full aspect-[4/3] rounded-lg border-2 border-dashed transition-all cursor-pointer overflow-hidden flex flex-col items-center justify-center group ${file ? 'border-transparent bg-gray-900' : 'border-gray-300 dark:border-[#27272a] hover:border-purple-500 dark:hover:border-purple-500 bg-gray-50 dark:bg-[#18181b] hover:bg-purple-50 dark:hover:bg-[#1f1f22]'}`; if (file) { const reader = new FileReader(); reader.onload = (e) => { let doodleBadge = file.isDoodled ? `<div class="absolute bottom-1 right-1 text-xs text-indigo-400 font-bold z-10"><i class="fa-solid fa-pen-nib"></i></div>` : ""; let editBtn = canDoodle ? `<div onclick="openEditor(${index}, event)" class="absolute bottom-1 left-1 w-5 h-5 bg-indigo-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow-sm z-20 hover:scale-110 hover:bg-indigo-400" title="涂鸦编辑"><i class="fa-solid fa-paintbrush text-[10px]"></i></div>` : ""; div.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover pointer-events-none"><div class="absolute top-1 left-1 bg-black/60 text-white text-[9px] font-bold px-1.5 rounded backdrop-blur-sm z-10">图 ${slotNum}</div>${editBtn} ${doodleBadge}<div onclick="clearSlot(${index}, event)" class="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow-sm z-20 hover:scale-110"><i class="fa-solid fa-xmark text-[10px]"></i></div><div onclick="viewOriginal('${e.target.result}')" class="absolute inset-0 z-0"></div>`; }; reader.readAsDataURL(file); } else { div.onclick = () => triggerSlotUpload(index); div.innerHTML = `<i class="fa-solid fa-plus text-gray-300 dark:text-gray-600 text-lg mb-1 group-hover:text-purple-500 transition"></i><span class="text-[10px] text-gray-400 dark:text-gray-500 font-mono group-hover:text-purple-500 transition">图片 ${slotNum}</span>`; } grid.appendChild(div); }); }
+
+        function renderSlots() {
+            const grid = document.getElementById('slots-grid');
+            const currentModel = document.getElementById('model-input').value; const canDoodle = (currentModel === 'nano-banana-2-4k');
+            grid.innerHTML = '';
+            imageSlots.forEach((file, index) => {
+                const slotNum = index + 1; const div = document.createElement('div');
+                div.className = `relative w-full aspect-[4/3] rounded-lg border-2 border-dashed transition-all cursor-pointer overflow-hidden flex flex-col items-center justify-center group ${file ? 'border-transparent bg-gray-900' : 'border-gray-300 dark:border-[#27272a] hover:border-purple-500 dark:hover:border-purple-500 bg-gray-50 dark:bg-[#18181b] hover:bg-purple-50 dark:hover:bg-[#1f1f22]'}`;
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        let doodleBadge = file.isDoodled ? `<div class="absolute bottom-1 right-1 text-xs text-indigo-400 font-bold z-10"><i class="fa-solid fa-pen-nib"></i></div>` : "";
+                        let editBtn = canDoodle ? `<div onclick="openEditor(${index}, event)" class="absolute bottom-1 left-1 w-5 h-5 bg-indigo-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow-sm z-20 hover:scale-110 hover:bg-indigo-400" title="涂鸦编辑"><i class="fa-solid fa-paintbrush text-[10px]"></i></div>` : "";
+                        div.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover pointer-events-none"><div class="absolute top-1 left-1 bg-black/60 text-white text-[9px] font-bold px-1.5 rounded backdrop-blur-sm z-10">图 ${slotNum}</div>${editBtn} ${doodleBadge}<div onclick="clearSlot(${index}, event)" class="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow-sm z-20 hover:scale-110"><i class="fa-solid fa-xmark text-[10px]"></i></div><div onclick="viewOriginal('${e.target.result}')" class="absolute inset-0 z-0"></div>`;
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    div.onclick = () => triggerSlotUpload(index);
+                    div.innerHTML = `<i class="fa-solid fa-plus text-gray-300 dark:text-gray-600 text-lg mb-1 group-hover:text-purple-500 transition"></i><span class="text-[10px] text-gray-400 dark:text-gray-500 font-mono group-hover:text-purple-500 transition">图片 ${slotNum}</span>`;
+                }
+                grid.appendChild(div);
+            });
+        }
         function triggerSlotUpload(index) { currentActiveSlot = index; const input = document.getElementById('slot-file-input'); input.value = ''; input.click(); }
         function handleSlotFile(event) { const file = event.target.files[0]; if (!file) return; imageSlots[currentActiveSlot] = file; renderSlots(); updatePromptLockState(); }
         function clearSlot(index, event) { if(event) event.stopPropagation(); imageSlots[index] = null; renderSlots(); updatePromptLockState(); }
         function clearAllSlots() { imageSlots = new Array(MAX_SLOTS).fill(null); renderSlots(); updatePromptLockState(); }
         function setBatchSize(num) { batchSize = num; document.querySelectorAll('.batch-btn').forEach(btn => { if(parseInt(btn.dataset.val) === num) btn.className = "batch-btn active-btn flex-1 py-2 text-xs rounded transition"; else btn.className = "batch-btn inactive-btn bg-gray-100 border-gray-300 text-gray-500 dark:bg-[#18181b] dark:border-[#27272a] dark:text-gray-400 flex-1 py-2 text-xs rounded transition"; }); }
-
-        // === 提交任务逻辑 ===
-        async function submitTask() {
-            const apiKey = localStorage.getItem('nano_api_key'); if (!apiKey) { openSettings(); return; }
-            let baseUrl = localStorage.getItem('nano_api_url') || DEFAULT_API_URL; baseUrl = baseUrl.replace(/\/v1\/images\/(edits|generations)\/?$/, '').replace(/\/+$/, '');
-            const prompt = document.getElementById('prompt-input').value.trim(); const ratio = document.getElementById('ratio-select').value; const size = document.getElementById('size-select').value; const modelName = document.getElementById('model-input').value; const btn = document.getElementById('generate-btn'), icon = document.getElementById('loading-icon');
-            if (!prompt) { alert("请输入提示词"); return; }
-            btn.disabled = true; btn.classList.add('opacity-70', 'cursor-not-allowed'); icon.classList.remove('hidden'); btn.querySelector('span').innerText = `生成中 (0/${batchSize})...`; 
-            if(window.innerWidth < 768) switchMobileTab('preview');
-            const validImages = imageSlots.filter(item => item !== null); originalRefImage = null;
-            if (validImages.length > 0) { const reader = new FileReader(); reader.onload = (e) => { originalRefImage = e.target.result; }; reader.readAsDataURL(validImages[0]); }
-            const startTime = Date.now();
-            const sendRequest = async () => {
-                const isTxt2Img = validImages.length === 0; let endpoint, body, headers; headers = { 'Authorization': `Bearer ${apiKey}` };
-                if (isTxt2Img) { endpoint = `${baseUrl}/v1/images/generations`; headers['Content-Type'] = 'application/json'; body = JSON.stringify({ model: modelName, prompt: prompt, aspect_ratio: ratio, image_size: size, n: 1, response_format: 'url' }); } 
-                else { endpoint = `${baseUrl}/v1/images/edits`; const formData = new FormData(); formData.append('model', modelName); formData.append('prompt', prompt); formData.append('aspect_ratio', ratio); formData.append('image_size', size); formData.append('n', 1); formData.append('response_format', 'url'); validImages.forEach((file) => formData.append('image', file)); body = formData; }
-                const response = await fetch(endpoint, { method: 'POST', headers: headers, body: body }); const data = await response.json(); if (!response.ok) throw new Error(data.error?.message || "请求失败"); return data.data || (data.url ? [{url: data.url}] : []);
-            };
-            try { const requestPromises = Array.from({ length: batchSize }, () => sendRequest()); const outcomes = await Promise.allSettled(requestPromises); const allResults = []; outcomes.forEach(outcome => { if (outcome.status === 'fulfilled') { allResults.push(...outcome.value); } else { console.error("部分请求失败:", outcome.reason); } }); const duration = ((Date.now() - startTime) / 1000).toFixed(1) + 's'; if (allResults.length > 0) { setMainImage(allResults[0].url, duration, originalRefImage); allResults.forEach(img => addToHistory(img.url, prompt, duration)); } else { alert("生成失败，请检查设置或重试"); } } catch (err) { console.error(err); alert("错误: " + err.message); } finally { btn.disabled = false; btn.classList.remove('opacity-70', 'cursor-not-allowed'); icon.classList.add('hidden'); btn.querySelector('span').innerText = "✨ 立即生成"; }
-        }
-
-        function setMainImage(url, duration = "", refSrc = null) {
-            currentMainImageUrl = url; const placeholder = document.getElementById('empty-placeholder'); const timeBadge = document.getElementById('time-badge'); placeholder.classList.add('hidden'); imgWrapper.classList.remove('hidden'); document.getElementById('main-image').src = url;
-            if (refSrc) { document.getElementById('ref-image').src = refSrc; compareOverlay.classList.remove('hidden'); sliderHandle.classList.remove('hidden'); sliderHandle.style.left = '50%'; compareOverlay.style.clipPath = 'inset(0 50% 0 0)'; } else { compareOverlay.classList.add('hidden'); sliderHandle.classList.add('hidden'); }
-            resetZoom(); if(duration) { document.getElementById('time-val').innerText = duration; timeBadge.classList.remove('hidden'); } else { timeBadge.classList.add('hidden'); }
-        }
+        
+        async function uploadImageToImgbb(file) { const apiKey = localStorage.getItem('nano_imgbb_key'); if (!apiKey) { alert("⚠️ 请先在设置中填写 ImgBB API Key！\n\n一加 API 需要网络图片链接，请去 api.imgbb.com 获取免费 Key。"); throw new Error("Missing ImgBB API Key"); } const formData = new FormData(); formData.append("image", file); try { const res = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}&expiration=604800`, { method: "POST", body: formData }); const data = await res.json(); if (data.success) { return data.data.url; } else { throw new Error(data.error?.message || "上传图床失败"); } } catch (e) { alert("图床上传失败: " + e.message); throw e; } }
+        async function submitTask() { const apiKey = localStorage.getItem('nano_api_key'); if (!apiKey) { openSettings(); return; } let baseUrl = localStorage.getItem('nano_api_url') || DEFAULT_API_URL; baseUrl = baseUrl.replace(/\/v1\/images\/(edits|generations)\/?$/, '').replace(/\/+$/, ''); const prompt = document.getElementById('prompt-input').value.trim(); const ratio = document.getElementById('ratio-select').value; const size = document.getElementById('size-select').value; const modelName = document.getElementById('model-input').value; const btn = document.getElementById('generate-btn'), icon = document.getElementById('loading-icon'); if (!prompt) { alert("请输入提示词"); return; } btn.disabled = true; btn.classList.add('opacity-70', 'cursor-not-allowed'); icon.classList.remove('hidden'); btn.querySelector('span').innerText = `生成中 (0/${batchSize})...`; if(window.innerWidth < 768) switchMobileTab('preview'); const validImages = imageSlots.filter(item => item !== null); originalRefImage = null; if (validImages.length > 0) { const reader = new FileReader(); reader.onload = (e) => { originalRefImage = e.target.result; }; reader.readAsDataURL(validImages[0]); } const startTime = Date.now(); const sendRequest = async () => { const isTxt2Img = validImages.length === 0; let endpoint, body, headers; headers = { 'Authorization': `Bearer ${apiKey}` }; const isYijia = baseUrl.includes('yijia') || baseUrl.includes('oneplus'); if (isTxt2Img) { endpoint = `${baseUrl}/v1/images/generations`; headers['Content-Type'] = 'application/json'; body = JSON.stringify({ model: modelName, prompt: prompt, aspect_ratio: ratio, image_size: size, n: 1, response_format: 'url' }); } else { endpoint = `${baseUrl}/v1/images/edits`; const formData = new FormData(); formData.append('model', modelName); formData.append('prompt', prompt); formData.append('aspect_ratio', ratio); formData.append('image_size', size); formData.append('n', 1); formData.append('response_format', 'url'); if (isYijia) { try { const imgUrl = await uploadImageToImgbb(validImages[0]); formData.append('image', imgUrl); } catch(e) { throw e; } } else { validImages.forEach((file) => formData.append('image', file)); } body = formData; } const response = await fetch(endpoint, { method: 'POST', headers: headers, body: body }); const data = await response.json(); if (!response.ok) throw new Error(data.error?.message || "请求失败"); return data.data || (data.url ? [{url: data.url}] : []); }; try { const requestPromises = Array.from({ length: batchSize }, () => sendRequest()); const outcomes = await Promise.allSettled(requestPromises); const allResults = []; outcomes.forEach(outcome => { if (outcome.status === 'fulfilled') { allResults.push(...outcome.value); } else { console.error("部分请求失败:", outcome.reason); } }); const duration = ((Date.now() - startTime) / 1000).toFixed(1) + 's'; if (allResults.length > 0) { setMainImage(allResults[0].url, duration, originalRefImage); allResults.forEach(img => addToHistory(img.url, prompt, duration)); } else { alert("生成失败，请检查设置或重试"); } } catch (err) { console.error(err); alert("错误: " + err.message); } finally { btn.disabled = false; btn.classList.remove('opacity-70', 'cursor-not-allowed'); icon.classList.add('hidden'); btn.querySelector('span').innerText = "✨ 立即生成"; } }
+        function setMainImage(url, duration = "", refSrc = null) { currentMainImageUrl = url; const placeholder = document.getElementById('empty-placeholder'); const timeBadge = document.getElementById('time-badge'); placeholder.classList.add('hidden'); imgWrapper.classList.remove('hidden'); document.getElementById('main-image').src = url; if (refSrc) { document.getElementById('ref-image').src = refSrc; compareOverlay.classList.remove('hidden'); sliderHandle.classList.remove('hidden'); sliderHandle.style.left = '50%'; compareOverlay.style.clipPath = 'inset(0 50% 0 0)'; } else { compareOverlay.classList.add('hidden'); sliderHandle.classList.add('hidden'); } resetZoom(); if(duration) { document.getElementById('time-val').innerText = duration; timeBadge.classList.remove('hidden'); } else { timeBadge.classList.add('hidden'); } }
         function clearMainPreview() { currentMainImageUrl = ""; imgWrapper.classList.add('hidden'); document.getElementById('empty-placeholder').classList.remove('hidden'); document.getElementById('time-badge').classList.add('hidden'); }
         function addToHistory(url, prompt, duration) { historyData.unshift({ url: url, prompt: prompt, duration: duration }); saveHistoryToLocal(); renderHistoryItem(url, prompt, duration); }
-        function renderHistoryItem(url, prompt, duration) {
-            const list = document.getElementById('history-list'); const empty = document.getElementById('history-empty'); if (empty) empty.remove(); const item = document.createElement('div');
-            item.className = "history-item group relative flex-shrink-0 md:aspect-[4/3] aspect-video w-full md:w-auto md:h-full h-32 bg-gray-900 rounded-xl overflow-hidden border border-gray-700 cursor-pointer hover:border-purple-500 transition shadow-lg flex md:block";
-            item.dataset.url = url; item.dataset.prompt = encodeURIComponent(prompt); item.dataset.duration = duration;
-            item.onclick = (e) => { if(!e.target.closest('.task-checkbox') && !e.target.closest('button')) { const decPrompt = decodeURIComponent(item.dataset.prompt); setMainImage(url, duration); document.getElementById('prompt-input').value = decPrompt; if(window.innerWidth < 768) switchMobileTab('preview'); } };
-            item.innerHTML = `<div class="relative h-full w-40 md:w-full"><img src="${url}" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition duration-300 pointer-events-none"><div class="absolute top-2 left-2 z-20"><input type="checkbox" class="task-checkbox" onchange="updateBatchState()" onclick="event.stopPropagation()"></div></div><div class="flex-1 p-3 bg-gray-900 md:absolute md:bottom-0 md:left-0 md:right-0 md:bg-gradient-to-t md:from-black/90 md:via-black/50 md:to-transparent pointer-events-none flex flex-col justify-center"><p class="text-white text-xs font-bold line-clamp-2 leading-tight drop-shadow-md mb-1.5">${prompt.replace(/</g, "&lt;")}</p><div class="flex items-center gap-2 mt-auto"><i class="fa-regular fa-circle-check text-green-400 text-[10px]"></i><span class="text-[9px] text-gray-500 bg-white/10 px-1.5 py-0.5 rounded">${duration}</span></div></div><div class="absolute top-2 right-2 flex gap-3 opacity-100 md:opacity-0 group-hover:opacity-100 transition duration-200 z-20"><button onclick="event.stopPropagation(); downloadSingleImage('${url}')" class="w-6 h-6 rounded-full bg-black/40 hover:bg-purple-500 text-white flex items-center justify-center backdrop-blur border border-white/10 transition" title="下载"><i class="fa-solid fa-download text-[10px]"></i></button><button onclick="event.stopPropagation(); deleteHistoryItem(this)" class="w-6 h-6 rounded-full bg-black/40 hover:bg-red-500 text-white flex items-center justify-center backdrop-blur border border-white/10 transition" title="删除"><i class="fa-solid fa-trash text-[10px]"></i></button></div>`;
-            list.prepend(item);
-        }
+        function renderHistoryItem(url, prompt, duration) { const list = document.getElementById('history-list'); const empty = document.getElementById('history-empty'); if (empty) empty.remove(); const item = document.createElement('div'); item.className = "history-item group relative flex-shrink-0 md:aspect-[4/3] aspect-video w-full md:w-auto md:h-full h-32 bg-gray-900 rounded-xl overflow-hidden border border-gray-700 cursor-pointer hover:border-purple-500 transition shadow-lg flex md:block"; item.dataset.url = url; item.dataset.prompt = encodeURIComponent(prompt); item.dataset.duration = duration; item.onclick = (e) => { if(!e.target.closest('.task-checkbox') && !e.target.closest('button')) { const decPrompt = decodeURIComponent(item.dataset.prompt); setMainImage(url, duration); document.getElementById('prompt-input').value = decPrompt; if(window.innerWidth < 768) switchMobileTab('preview'); } }; item.innerHTML = `<div class="relative h-full w-40 md:w-full"><img src="${url}" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition duration-300 pointer-events-none"><div class="absolute top-2 left-2 z-20"><input type="checkbox" class="task-checkbox" onchange="updateBatchState()" onclick="event.stopPropagation()"></div></div><div class="flex-1 p-3 bg-gray-900 md:absolute md:bottom-0 md:left-0 md:right-0 md:bg-gradient-to-t md:from-black/90 md:via-black/50 md:to-transparent pointer-events-none flex flex-col justify-center"><p class="text-white text-xs font-bold line-clamp-2 leading-tight drop-shadow-md mb-1.5">${prompt.replace(/</g, "&lt;")}</p><div class="flex items-center gap-2 mt-auto"><i class="fa-regular fa-circle-check text-green-400 text-[10px]"></i><span class="text-[9px] text-gray-500 bg-white/10 px-1.5 py-0.5 rounded">${duration}</span></div></div><div class="absolute top-2 right-2 flex gap-3 opacity-100 md:opacity-0 group-hover:opacity-100 transition duration-200 z-20"><button onclick="event.stopPropagation(); downloadSingleImage('${url}')" class="w-6 h-6 rounded-full bg-black/40 hover:bg-purple-500 text-white flex items-center justify-center backdrop-blur border border-white/10 transition" title="下载"><i class="fa-solid fa-download text-[10px]"></i></button><button onclick="event.stopPropagation(); deleteHistoryItem(this)" class="w-6 h-6 rounded-full bg-black/40 hover:bg-red-500 text-white flex items-center justify-center backdrop-blur border border-white/10 transition" title="删除"><i class="fa-solid fa-trash text-[10px]"></i></button></div>`; list.prepend(item); }
         function toggleSelectAll() { const mainCb = document.getElementById('select-all'); document.querySelectorAll('#history-list .task-checkbox').forEach(cb => cb.checked = mainCb.checked); updateBatchState(); }
         function updateBatchState() { const checkboxes = document.querySelectorAll('#history-list .task-checkbox'); const checked = Array.from(checkboxes).filter(cb => cb.checked); const batchActions = document.getElementById('batch-actions'); const titleLabel = document.getElementById('task-list-title'); if(checked.length > 0) { batchActions.classList.remove('hidden'); titleLabel.innerHTML = `已选 <span class="text-purple-500">${checked.length}</span> 项`; titleLabel.classList.add('text-gray-900', 'dark:text-white'); } else { batchActions.classList.add('hidden'); titleLabel.innerHTML = '任务列表'; titleLabel.classList.remove('text-gray-900', 'dark:text-white'); } const mainCb = document.getElementById('select-all'); if(checked.length === checkboxes.length && checkboxes.length > 0) mainCb.checked = true; else if(checked.length === 0) mainCb.checked = false; else mainCb.indeterminate = true; }
         async function batchDownload() { const checked = document.querySelectorAll('#history-list .task-checkbox:checked'); if(checked.length === 0) return; if(!confirm(`确认下载选中的 ${checked.length} 张图片吗？`)) return; for(let cb of checked) { const item = cb.closest('.history-item'); downloadSingleImage(item.dataset.url); await new Promise(r => setTimeout(r, 500)); } }
@@ -536,4 +541,3 @@
     </script>
 </body>
 </html>
-
